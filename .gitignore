@@ -1,0 +1,14 @@
+node_modules
+Rplots.pdf
+.DS_Store
+.env
+.RData
+.Rhistory
+.idea/
+.ipynb_checkpoints/
+._datasets
+
+# FOLDERS
+datasets/
+results/
+bin/

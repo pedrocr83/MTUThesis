@@ -1,0 +1,22 @@
+
+conda install mamba -n base -c conda-forge
+
+mamba env create -f thesis_r.yml
+mamba env create -f thesis_ml.yml # OR # mamba create -n thesis_r r-base=4.2 r-biocmanager r-getopt r-tidyverse r-remotes plotly
+
+## In R ## 
+options(Ncpus = 16)
+BiocManager::install("phyloseq")
+(yes to updates)
+BiocManager::install("microbiome")
+install.packages("tidyverse", dependencies=T)
+install.packages("GUniFrac", dependencies=T)
+install.packages("metacoder", dependencies=T)
+remotes::install_github("david-barnett/microViz")
+install.packages("Rtsne", dependencies=T)
+install.packages('umap', dependencies=T)
+BiocManager::install("scater")
+remotes::install_github("plotly/plotly")
+BiocManager::install("dittoSeq")
+remotes::install_github("HPCBio/plotly_microbiome")
+## In R ## 

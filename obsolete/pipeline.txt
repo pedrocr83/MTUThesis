@@ -1,0 +1,56 @@
+suppressMessages(library(phyloseq))
+suppressMessages(library(tidyr))
+suppressMessages(library(dplyr))
+suppressMessages(library(tidyverse))
+suppressMessages(library(microbiome))
+suppressMessages(library(metacoder))
+suppressMessages(library(GUniFrac))
+suppressMessages(library(microViz))
+suppressMessages(library(reshape2))
+suppressMessages(library(ggplot2))
+suppressMessages(library(getopt))
+suppressMessages(library(tools))
+suppressMessages(library(glue))
+suppressMessages(library(vegan))
+suppressMessages(library(Rtsne))
+suppressMessages(library(scater))
+suppressMessages(library(umap))
+suppressMessages(library(plotly))
+suppressMessages(library(plotly.microbiome))
+
+study_name <- 'sokol'
+study.otu <- import_biom("datasets/sokol/gg/otutable.biom")
+study.mapping <- read.csv('datasets/sokol/mapping-orig.txt', header=T, sep='\t')
+study.taxonomy <- read.csv('bin/gg_13_5_taxonomy.txt', header=F, sep='\t')
+study.tree <- read_tree("bin/gg_13_5_otus_99_annotated.tree")
+class_variable <- "ULCERATIVE_COLIT_OR_CROHNS_DIS"
+classes <- c(unlist(strsplit("Healthy,Crohn's disease", ",")))
+class1 <- classes[1]
+class2 <- classes[2]
+
+distance_measure <- 'gunifrac'
+distance_measure_results <- 'bray'
+phase <- 'phase1'
+taxa_rank <- 'genus'
+transformation <- 'clr'
+
+run_name <- paste(taxa_rank, transformation, distance_measure, sep='_')
+run_name_path <- file.path('results', study_name, run_name)
+results_path <- file.path('results', study_name, run_name, 'results')
+temp_files <- file.path('results', study_name, run_name, 'tempfiles')
+classes <- c(unlist(strsplit(classes, ",")))
+
+row.names(study.taxonomy) <- study.taxonomy$V1
+study.taxonomy <- study.taxonomy %>% separate(V2, c("Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "Species"), sep=';', remove=T)
+study.taxonomy <- subset(study.taxonomy, select = -c(V1))
+
+row.names(study.mapping) <- study.mapping$X.SampleID
+study.mapping <- subset(study.mapping, select = -c(X.SampleID))
+study.samples <- row.names(study.mapping[study.mapping[[class_variable]] %in% classes, ])
+
+study.samples.class1 <- row.names(study.mapping[study.mapping[[class_variable]] == class1, ])
+study.samples.class2 <- row.names(study.mapping[study.mapping[[class_variable]] == class2, ])
+
+study <- phyloseq(otu_table(as.matrix(study.otu)), sample_data(study.mapping), tax_table(as.matrix(study.taxonomy)), study.tree)
+study <- subset_samples(study, (row.names(sample_data(study)) %in% study.samples))
+study <- prune_taxa(taxa_sums(study) > 0, study)
